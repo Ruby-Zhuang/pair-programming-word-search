@@ -1,39 +1,43 @@
-const wordSearch = (letters, word) => {
-  // Empty array case
-  if (letters.length === 0) return false;
+// Require modules
+const { getDiagonalsLeft, getDiagonalsRight } = require('./diagonalChecks.js');
+const { transpose } = require('./transpose.js');
 
-  // Reverse word to check for backwards case
-  let wordReversed = word.split('').reverse().join('');
+// Search for string forwards and backwards by joining each row of 2D character array into strings
+const searchLines = (matrix, string) => {
+  // Reverse string to check for backwards case
+  const stringReversed = string.split('').reverse().join('');
 
-  // Transpose letters for vertical case
-  const vertical = transpose(letters);
-
-  // Check horizontally
-  const horizontalJoin = letters.map(ls => ls.join(''));
-  for (const line of horizontalJoin) {
-    if (line.includes(word) || line.includes(wordReversed)) return true;
+  const joinedRows = matrix.map(ls => ls.join(''));
+  for (const line of joinedRows) {
+    if (line.includes(string) || line.includes(stringReversed)) return true;
   }
-
-  // Check vertically
-  const verticalJoin = vertical.map(ls => ls.join(''));
-  for (const line of verticalJoin) {
-    if (line.includes(word) || line.includes(wordReversed)) return true;
-  }
-
   return false;
 };
 
-// Transpose function
-const transpose = (matrix) => {
-  const result = []; // Initialize empty array
+// Function to set up checks
+const wordSearch = (letters, word) => {
+  // Empty array case
+  if (letters.length === 0) return false;
+  
+  // Check horizontally
+  const horizontalCheck = searchLines(letters, word);
+  
+  // Check vertically
+  const lettersTransposed = transpose(letters);   // Transpose letters for vertical case
+  const verticalCheck = searchLines(lettersTransposed, word);
+  
+  // Check diagonally left direction
+  const diagonalLinesLeft = getDiagonalsLeft(letters, word);
+  const diagonalLeftCheck = searchLines(diagonalLinesLeft, word);
+  
+  // Check diagonally right direction
+  const diagonalLinesRight = getDiagonalsRight(letters, word);
+  const diagonalRightCheck = searchLines(diagonalLinesRight, word);
 
-  for (let x = 0; x < matrix.length; x++) {
-    for (let y = 0; y < matrix[x].length; y++) {
-      if (x === 0) result[y] = []; // Initialize each row of transposed matrix (# of rows in transposed should be # of columns in original matrix)
-      result[y][x] = matrix[x][y];
-    }
-  }
-  return result;
+  // Return true if any of the checks are true, otherwise return false
+  return ((horizontalCheck) || (verticalCheck) || (diagonalLeftCheck) || (diagonalRightCheck));
 };
 
+
 module.exports = wordSearch;
+
